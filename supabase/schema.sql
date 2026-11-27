@@ -25,7 +25,13 @@ create table if not exists public.transactions (
   category    text not null,
   description text not null,
   trx_date    date not null,
-  created_at  timestamptz not null default now()
+  created_at  timestamptz not null default now(),
+  -- Kategori v2; sama dengan src/categories.js
+  constraint transactions_category_check check (
+    (type = 'expense' and category in ('makanan', 'kost', 'transportasi', 'kebutuhan', 'tagihan', 'kesehatan', 'lainnya'))
+    or
+    (type = 'income'  and category in ('gaji', 'lainnya_masuk'))
+  )
 );
 
 create index if not exists transactions_trx_date_idx on public.transactions (trx_date);

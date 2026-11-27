@@ -2,6 +2,7 @@ import { config, todayInTz } from './config.js';
 import express from 'express';
 import { tg, sendMessage, downloadFile } from './telegram.js';
 import { extractTransactions } from './gemini.js';
+import { categoryLabel } from './categories.js';
 import { log } from './logger.js';
 import {
   markUpdateProcessed,
@@ -16,7 +17,7 @@ const MAX_VOICE_BYTES = 5 * 1024 * 1024;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const HELP = `Halo! Kirim voice atau teks transaksi, contoh:
-"Beli makan 25 ribu, bensin 50 ribu, dapat freelance 300 ribu"
+"Beli makan 25 ribu, bensin 50 ribu, skincare 80 ribu, dapat freelance 300 ribu"
 
 Saya akan menampilkan draft, lalu tekan Simpan atau Batal.
 
@@ -28,7 +29,7 @@ const rupiah = (n) => `Rp${new Intl.NumberFormat('id-ID').format(n)}`;
 function buildPreview(transcript, items) {
   const lines = items.map((t, i) => {
     const label = t.type === 'income' ? '🟢 Pemasukan' : '🔴 Pengeluaran';
-    return `${i + 1}. ${label} ${rupiah(t.amount)}\n   ${t.category} · ${t.description} · ${t.date}`;
+    return `${i + 1}. ${label} ${rupiah(t.amount)}\n   ${categoryLabel(t.category)} · ${t.description} · ${t.date}`;
   });
   const income = items.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const expense = items.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);

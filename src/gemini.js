@@ -1,21 +1,9 @@
 import { GoogleGenAI } from '@google/genai';
 import { config } from './config.js';
+import { CATEGORIES, categoryPromptSection, resolveCategory } from './categories.js';
 
 const ai = new GoogleGenAI({ apiKey: config.geminiApiKey });
 
-export const CATEGORIES = [
-  'makanan',
-  'transportasi',
-  'belanja',
-  'tagihan',
-  'kesehatan',
-  'pendidikan',
-  'hiburan',
-  'gaji',
-  'freelance',
-  'bonus',
-  'lainnya',
-];
 
 const SCHEMA = {
   type: 'object',
@@ -40,14 +28,14 @@ const SCHEMA = {
 };
 
 function buildPrompt(today, isAudio) {
-  return `Kamu adalah pencatat keuangan pribadi berbahasa Indonesia.
+  return `Kamu adalah pencatat keuangan pribadi berbahasa Indonesia untuk seorang anak kost.
 Hari ini adalah ${today}.
 ${isAudio ? 'Transkripsikan audio apa adanya ke field "transcript".' : 'Salin teks pengguna apa adanya ke field "transcript".'}
 Lalu ekstrak setiap transaksi ke "transactions" dengan aturan:
 - type: "income" untuk pemasukan, "expense" untuk pengeluaran.
 - amount: bilangan bulat rupiah. Contoh: "dua puluh lima ribu" = 25000, "25rb" = 25000, "1,5 juta" = 1500000.
 - JANGAN menebak nominal. Lewati transaksi yang nominalnya tidak jelas.
-- category: pilih salah satu dari daftar yang tersedia; jika ragu pakai "lainnya".
+${categoryPromptSection()}
 - description: ringkas, maksimal 8 kata.
 - date: format YYYY-MM-DD. Hitung kata relatif ("kemarin", "tadi pagi") dari tanggal hari ini. Jika tidak disebut, pakai ${today}.
 - Jika tidak ada transaksi, kembalikan array kosong.`;
@@ -70,7 +58,7 @@ export function normalizeTransaction(item, today) {
   return {
     type: item.type,
     amount,
-    category: CATEGORIES.includes(item.category) ? item.category : 'lainnya',
+    category: resolveCategory(item.type, item.category),
     description: String(item.description ?? '').trim().slice(0, 200) || '-',
     date: isValidDate(item.date, today) ? item.date : today,
   };

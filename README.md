@@ -9,6 +9,7 @@ src/index.js        Express app + webhook + alur bot
 src/config.js       Environment variables + tanggal hari ini
 src/telegram.js     Pemanggilan Telegram Bot API
 src/gemini.js       Voice/teks -> transaksi (Gemini)
+src/categories.js   Daftar kategori + aturan (sumber prompt Gemini)
 src/db.js           Akses Supabase
 supabase/schema.sql Tabel + fungsi database
 scripts/set-webhook.js  Mendaftarkan webhook ke Telegram
